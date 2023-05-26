@@ -12,11 +12,14 @@
         ref="adRef"
         class="ad-video"
         @complete="onAdComplete"
+        @error="onAdComplete"
+        @skipped="onAdComplete"
       />
       <VideoPlayer
         v-else
         :key="v.id"
         :options="v.options"
+        :index="v.id"
         data-type="video"
         @ended="onEnded"
       ></VideoPlayer>
@@ -64,12 +67,13 @@ const videoOptions = () => ({
 
 let videoSlides = [];
 
-const onSlideChange = (swiper) => {
+function onSlideChange(swiper) {
   console.log('slide change');
   let slideEls = document.querySelectorAll('.swiper-slide .video-js');
   slideEls = Array.from(slideEls);
   slideEls.forEach((s) => {
     const video = s.querySelector('video');
+    console.log('foreach video');
     if (video) {
       video.currentTime = 0;
       video.setAttribute('autoplay', false);
@@ -81,9 +85,9 @@ const onSlideChange = (swiper) => {
     ' .swiper-slide.swiper-slide-active  .ad-video'
   );
   if (activeAdEl) {
-    adRef.value.playAds();
+    adRef.value[0].playAds();
   } else {
-    // adRef.value.pause();
+    adRef.value[0].pause();
   }
 
   const activeVideo = document.querySelector(
@@ -92,7 +96,7 @@ const onSlideChange = (swiper) => {
   if (activeVideo) {
     activeVideo.play();
   }
-};
+}
 const onEnded = () => {};
 onMounted(() => {
   // variable
@@ -100,15 +104,26 @@ onMounted(() => {
   var waiting = 3000;
 
   let videos = [
-    { src: 'http://techslides.com/demos/sample-videos/small.mp4', id: 1 },
     { src: 'http://techslides.com/demos/sample-videos/small.mp4', id: 2 },
-    { src: 'http://techslides.com/demos/sample-videos/small.mp4', id: 3 },
+    {
+      src: 'https://storage.googleapis.com/gvabox/media/samples/stock.mp4',
+      id: 3,
+    },
     { src: 'http://techslides.com/demos/sample-videos/small.mp4', id: 4 },
-    { src: 'http://techslides.com/demos/sample-videos/small.mp4', id: 5 },
-    { src: 'http://techslides.com/demos/sample-videos/small.mp4', id: 6 },
-    { src: 'http://techslides.com/demos/sample-videos/small.mp4', id: 7 },
-    { src: 'http://techslides.com/demos/sample-videos/small.mp4', id: 8 },
-    { src: 'http://techslides.com/demos/sample-videos/small.mp4', id: 9 },
+    // {
+    //   src: 'https://storage.googleapis.com/gvabox/media/samples/stock.mp4',
+    //   id: 5,
+    // },
+    // { src: 'http://techslides.com/demos/sample-videos/small.mp4', id: 6 },
+    // {
+    //   src: 'https://storage.googleapis.com/gvabox/media/samples/stock.mp4',
+    //   id: 7,
+    // },
+    // { src: 'http://techslides.com/demos/sample-videos/small.mp4', id: 8 },
+    // {
+    //   src: 'https://storage.googleapis.com/gvabox/media/samples/stock.mp4',
+    //   id: 9,
+    // },
   ];
 
   videos = videos.map((v, i) => {
@@ -116,9 +131,9 @@ onMounted(() => {
       ...videoOptions(),
       sources: [{ src: v.src, type: 'video/mp4' }],
     };
-    if (i === 0) {
-      options.autoplay = true;
-    }
+    // if (i === 0) {
+    //   options.autoplay = true;
+    // }
     return {
       ...v,
       options,
@@ -130,28 +145,6 @@ onMounted(() => {
     { isAd: true, adTagURL: '' },
     ...videos.slice(injectIndex),
   ];
-
-  // swiper object
-  // swiper.on('slideChangeTransitionEnd', function () {
-  //   var index = swiper.activeIndex;
-  //   var currentSlide = $(swiper.slides[index]);
-  //   var currentSlideType = currentSlide.data('slide-type');
-
-  //   clearTimeout(timeout);
-
-  //   switch (currentSlideType) {
-  //     case 'img':
-  //       runNext();
-  //       break;
-  //     case 'vdo':
-  //       player.currentTime(0);
-  //       player.play();
-  //       videoPlayStatus = VIDEO_PLAYING_STATE.PLAYING;
-  //       break;
-  //     default:
-  //       throw new Error('invalid slide type');
-  //   }
-  // });
 });
 
 // global function

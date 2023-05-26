@@ -1,19 +1,16 @@
 <template>
   <div id="main-container">
     <div id="adContainer"></div>
-    <video
-      id="contentElement"
-      src="http://techslides.com/demos/sample-videos/small.mp4"
-      playsinline
-      muted
-    ></video>
+    <video id="contentElement" playsinline muted>
+      <source src="http://techslides.com/demos/sample-videos/small.mp4" />
+    </video>
   </div>
 </template>
 
 <script setup>
 import { onMounted, defineEmits, defineExpose } from 'vue';
 import { loadScript } from '../utils';
-const emit = defineEmits(['complete', 'error']);
+const emit = defineEmits(['complete', 'error', 'skipped']);
 
 onMounted(() => {
   loadScript(
@@ -162,10 +159,9 @@ function autoplayChecksResolved() {
   const adsRequest = new google.ima.AdsRequest();
   adsRequest.adTagUrl =
     'https://pubads.g.doubleclick.net/gampad/ads?' +
-    'iu=/21775744923/external/single_ad_samples&sz=640x480&' +
-    'cust_params=sample_ct%3Dlinear&ciu_szs=300x250%2C728x90&' +
-    'gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&' +
-    'impl=s&correlator=';
+    'iu=/21775744923/external/single_preroll_skippable&sz=640x480&' +
+    'ciu_szs=300x250%2C728x90&gdfp_req=1&' +
+    'output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=';
 
   // Specify the linear and nonlinear slot sizes. This helps the SDK to
   // select the correct creative if multiple are returned.
@@ -203,7 +199,7 @@ const start = () => {
 /**
  * Loads the video content and initializes IMA ad playback.
  */
-const playAds = () => {
+function playAds() {
   try {
     if (!adsInitialized) {
       adDisplayContainer.initialize();
@@ -220,7 +216,7 @@ const playAds = () => {
     console.log('play Ads error');
     emit('error');
   }
-};
+}
 
 /**
  * Handles the ad manager loading and sets ad event listeners.
@@ -258,13 +254,14 @@ function onAdsManagerLoaded(adsManagerLoadedEvent) {
   adsManager.addEventListener(google.ima.AdEvent.Type.LOADED, onAdEvent);
   adsManager.addEventListener(google.ima.AdEvent.Type.STARTED, onAdEvent);
   adsManager.addEventListener(google.ima.AdEvent.Type.COMPLETE, onAdEvent);
+  adsManager.addEventListener(google.ima.AdEvent.Type.SKIPPED, onAdEvent);
 
-  if (autoplayAllowed) {
-    playAds();
-  } else {
-    // playButton.style.display = 'block';
-    console.log('not support autoplay');
-  }
+  //   if (autoplayAllowed) {
+  //     playAds();
+  //   } else {
+  //     // playButton.style.display = 'block';
+  //     console.log('not support autoplay');
+  //   }
 }
 
 /**
@@ -308,6 +305,9 @@ function onAdEvent(adEvent) {
       console.log('ads complete');
       emit('complete');
       break;
+
+    case google.ima.AdEvent.Type.SKIPPED:
+      emit('skipped');
   }
 }
 
@@ -352,5 +352,6 @@ defineExpose({ playAds, pause, start });
   position: absolute;
   top: 0px;
   left: 0px;
+  z-index: 1;
 }
 </style>

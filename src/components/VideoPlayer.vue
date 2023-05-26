@@ -20,7 +20,7 @@ const defaultOptions = () => ({
 export default {
   props: {
     options: Object,
-    autoplay: Boolean,
+    index: Number,
   },
   setup(props, { emit }) {
     const videoRef = ref(null);
@@ -44,6 +44,9 @@ export default {
         if (options.value.autoplay) {
           player.play();
         }
+      });
+      player.on('timeupdate', () => {
+        console.log(`video ${props.index} timeupdate`);
       });
     });
 
