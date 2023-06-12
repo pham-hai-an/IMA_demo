@@ -157,12 +157,14 @@ function contentEndedListener() {
 function autoplayChecksResolved() {
   // Request video ads.
   const adsRequest = new google.ima.AdsRequest();
-  adsRequest.adTagUrl =
-    'https://pubads.g.doubleclick.net/gampad/ads?' +
-    'iu=/21775744923/external/single_preroll_skippable&sz=640x480&' +
-    'ciu_szs=300x250%2C728x90&gdfp_req=1&' +
-    'output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=';
+  //   adsRequest.adTagUrl =
+  //     'https://pubads.g.doubleclick.net/gampad/ads?' +
+  //     'iu=/21775744923/external/single_preroll_skippable&sz=640x480&' +
+  //     'ciu_szs=300x250%2C728x90&gdfp_req=1&' +
+  //     'output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=';
 
+  adsRequest.adTagUrl =
+    'https://pubads.g.doubleclick.net/gampad/ads?iu=/21775744923/external/nonlinear_ad_samples&sz=480x70&cust_params=sample_ct%3Dnonlinear&ciu_szs=300x250%2C728x90&gdfp_req=1&output=vast&unviewed_position_start=1&env=vp&impl=s&correlator=';
   // Specify the linear and nonlinear slot sizes. This helps the SDK to
   // select the correct creative if multiple are returned.
   adsRequest.linearAdSlotWidth = 640;
@@ -192,10 +194,17 @@ const pause = () => {
   adsManager.pause();
 };
 
+const stop = () => {
+  adsManager.stop();
+};
+
 const start = () => {
   adsManager.start();
 };
 
+function restartAdAtBeginning() {
+  setUpIMA();
+}
 /**
  * Loads the video content and initializes IMA ad playback.
  */
@@ -262,6 +271,9 @@ function onAdsManagerLoaded(adsManagerLoadedEvent) {
   //     // playButton.style.display = 'block';
   //     console.log('not support autoplay');
   //   }
+  //   setTimeout(() => {
+  //     pause();
+  //   }, 100);
 }
 
 /**
@@ -340,7 +352,7 @@ function onContentResumeRequested() {
   videoContent.onended = contentEndedListener;
 }
 
-defineExpose({ playAds, pause, start });
+defineExpose({ playAds, pause, start, stop, restartAdAtBeginning });
 </script>
 
 <style lang="scss" scoped>

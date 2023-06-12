@@ -2,6 +2,7 @@
   <swiper
     :navigation="true"
     :modules="modules"
+    :direction="'vertical'"
     class="mySwiper"
     @swiper="onSwiper"
     @slideChangeTransitionEnd="onSlideChange"
@@ -29,8 +30,8 @@
 
 <script setup>
 // Import Swiper Vue.js components
-import { Swiper, SwiperSlide } from 'swiper/vue';
-import { ref, defineExpose } from 'vue';
+import { Swiper, SwiperSlide, useSwiper } from 'swiper/vue';
+import { ref, defineExpose, nextTick } from 'vue';
 import VideoPlayer from './VideoPlayer.vue';
 import AdVideo from './AdVideo.vue';
 
@@ -45,6 +46,9 @@ import { onMounted } from 'vue';
 const modules = [Navigation];
 
 const adRef = ref(null);
+let videoSlides = ref([]);
+
+const injectIndex = 2;
 
 let swp;
 const onSwiper = (swiper) => {
@@ -53,6 +57,11 @@ const onSwiper = (swiper) => {
 
 const onAdComplete = () => {
   swp.slideNext();
+  // swp.removeSlide(injectIndex);
+  videoSlides.value.splice(injectIndex, 1);
+  nextTick(() => {
+    swp.update();
+  });
 };
 
 const videoOptions = () => ({
@@ -65,9 +74,8 @@ const videoOptions = () => ({
   ],
 });
 
-let videoSlides = [];
-
 function onSlideChange(swiper) {
+  swp = swiper;
   console.log('slide change');
   let slideEls = document.querySelectorAll('.swiper-slide .video-js');
   slideEls = Array.from(slideEls);
@@ -86,13 +94,22 @@ function onSlideChange(swiper) {
   );
   if (activeAdEl) {
     adRef.value[0].playAds();
-  } else {
-    adRef.value[0].pause();
+    setTimeout(() => {
+      adRef.value[0].pause();
+    }, 3000);
+  } else if (adRef) {
+    const adEl = document.querySelector(' .swiper-slide  .ad-video');
+    if (adEl) {
+      adRef.value[0].pause();
+    }
   }
 
   const activeVideo = document.querySelector(
     '.swiper-slide.swiper-slide-active video'
   );
+
+  console.log({ activeVideo });
+
   if (activeVideo) {
     activeVideo.play();
   }
@@ -104,26 +121,27 @@ onMounted(() => {
   var waiting = 3000;
 
   let videos = [
+    { src: 'http://techslides.com/demos/sample-videos/small.mp4', id: 1 },
     { src: 'http://techslides.com/demos/sample-videos/small.mp4', id: 2 },
     {
       src: 'https://storage.googleapis.com/gvabox/media/samples/stock.mp4',
       id: 3,
     },
     { src: 'http://techslides.com/demos/sample-videos/small.mp4', id: 4 },
-    // {
-    //   src: 'https://storage.googleapis.com/gvabox/media/samples/stock.mp4',
-    //   id: 5,
-    // },
-    // { src: 'http://techslides.com/demos/sample-videos/small.mp4', id: 6 },
-    // {
-    //   src: 'https://storage.googleapis.com/gvabox/media/samples/stock.mp4',
-    //   id: 7,
-    // },
-    // { src: 'http://techslides.com/demos/sample-videos/small.mp4', id: 8 },
-    // {
-    //   src: 'https://storage.googleapis.com/gvabox/media/samples/stock.mp4',
-    //   id: 9,
-    // },
+    {
+      src: 'https://storage.googleapis.com/gvabox/media/samples/stock.mp4',
+      id: 5,
+    },
+    { src: 'http://techslides.com/demos/sample-videos/small.mp4', id: 6 },
+    {
+      src: 'https://storage.googleapis.com/gvabox/media/samples/stock.mp4',
+      id: 7,
+    },
+    { src: 'http://techslides.com/demos/sample-videos/small.mp4', id: 8 },
+    {
+      src: 'https://storage.googleapis.com/gvabox/media/samples/stock.mp4',
+      id: 9,
+    },
   ];
 
   videos = videos.map((v, i) => {
@@ -139,8 +157,7 @@ onMounted(() => {
       options,
     };
   });
-  const injectIndex = 2;
-  videoSlides = [
+  videoSlides.value = [
     ...videos.slice(0, injectIndex),
     { isAd: true, adTagURL: '' },
     ...videos.slice(injectIndex),
